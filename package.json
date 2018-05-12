@@ -1,28 +1,34 @@
 {
-  "name": "json-server",
+  "name": "fds-json-server",
   "version": "0.12.1",
-  "description": "Serves JSON files through REST routes.",
+  "description": "A fork from json-server augmented with authentication & authorization",
   "main": "./lib/server/index.js",
   "bin": "./bin/index.js",
   "directories": {
     "test": "test"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.18.2",
     "chalk": "^2.3.0",
+    "common-tags": "^1.7.2",
     "compression": "^1.7.1",
     "connect-pause": "^0.1.0",
     "cors": "^2.8.4",
     "errorhandler": "^1.2.0",
     "express": "^4.16.2",
+    "express-async-wrap": "^1.0.0",
+    "express-jwt": "^5.3.1",
     "express-urlrewrite": "^1.2.0",
     "json-parse-helpfulerror": "^1.0.3",
+    "jsonwebtoken": "^8.2.0",
     "lodash": "^4.11.2",
     "lodash-id": "^0.14.0",
     "lowdb": "^0.15.0",
     "method-override": "^2.3.10",
     "morgan": "^1.9.0",
     "nanoid": "^1.0.1",
+    "node-fetch": "^2.1.2",
     "object-assign": "^4.0.1",
     "please-upgrade-node": "^3.0.1",
     "pluralize": "^7.0.0",
@@ -37,6 +43,7 @@
     "babel-register": "^6.26.0",
     "crlf": "^1.1.1",
     "cross-env": "^5.1.1",
+    "dotenv": "^5.0.1",
     "eslint": "^4.10.0",
     "eslint-config-prettier": "^2.7.0",
     "eslint-config-standard": "^10.2.1",
@@ -45,7 +52,6 @@
     "eslint-plugin-prettier": "^2.3.1",
     "eslint-plugin-promise": "^3.6.0",
     "eslint-plugin-standard": "^3.0.1",
-    "husky": "^0.14.3",
     "markdown-toc": "^1.2.0",
     "mkdirp": "^0.5.1",
     "mocha": "^4.0.1",
@@ -72,7 +78,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/typicode/json-server.git"
+    "url": "git://github.com/fds9/fds-json-server.git"
   },
   "keywords": [
     "JSON",
@@ -90,13 +96,13 @@
     "dummy",
     "sandbox"
   ],
-  "author": "Typicode <typicode@gmail.com>",
+  "author": "Kim Seungha <seungha.me@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/typicode/json-server/issues"
+    "url": "https://github.com/fds9/fds-json-server/issues"
   },
-  "homepage": "https://github.com/typicode/json-server",
+  "homepage": "https://github.com/fds9/fds-json-server",
   "engines": {
-    "node": ">=4"
+    "node": ">=8"
   }
 }

@@ -10,8 +10,11 @@ const plural = require('./plural')
 const nested = require('./nested')
 const singular = require('./singular')
 const mixins = require('../mixins')
+const user = require('./user')
 
-module.exports = (source, opts = { foreignKeySuffix: 'Id' }) => {
+module.exports = (source, opts) => {
+  opts = Object.assign({ foreignKeySuffix: 'Id' }, opts)
+
   // Create router
   const router = express.Router()
 
@@ -48,6 +51,9 @@ module.exports = (source, opts = { foreignKeySuffix: 'Id' }) => {
   router.get('/db', (req, res) => {
     res.jsonp(db.getState())
   })
+
+  // Mount /users, /auth routes
+  router.use(user(db, opts))
 
   // Handle /:parent/:parentId/:resource
   router.use(nested(opts))
