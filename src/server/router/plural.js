@@ -7,6 +7,8 @@ const getFullURL = require('./get-full-url')
 const utils = require('../utils')
 const delay = require('./delay')
 const NotAllowedError = require('./NotAllowedError')
+const { checkAuthError } = require('./authMiddleware')
+
 module.exports = (db, name, opts) => {
   const { authOpts, hashedPasswordName = 'hashedPassword' } = opts
 
@@ -370,21 +372,6 @@ module.exports = (db, name, opts) => {
       j(req, res, next)
     } else {
       next()
-    }
-  }
-  function checkAuthError(err, req, res, next) {
-    if (err instanceof jwtMiddleware.UnauthorizedError) {
-      res.status(401)
-      res.send({
-        reason: err.message
-      })
-    } else if (err instanceof NotAllowedError) {
-      res.status(403)
-      res.send({
-        reason: err.message
-      })
-    } else {
-      next(err)
     }
   }
   const w = write(db)
