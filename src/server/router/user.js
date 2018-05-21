@@ -1,9 +1,10 @@
 const express = require('express')
 const wrap = require('express-async-wrap')
 const jwt = require('jsonwebtoken')
-const write = require('./write')
 const bcrypt = require('bcryptjs')
+const jwtMiddleware = require('express-jwt')
 const { html } = require('common-tags')
+const write = require('./write')
 
 const registerTemplate = () => html`
 <!DOCTYPE html>
@@ -250,6 +251,11 @@ module.exports = (db, opts) => {
     })
   }
 
+  function me(req, res, next) {
+    res.locals.data = req.user
+    next()
+  }
+
   const w = write(db)
   const render = (req, res) => {
     res.jsonp(res.locals.data)
@@ -276,5 +282,6 @@ module.exports = (db, opts) => {
       .write()
     res.redirect('/users/login')
   })
+  router.get('/me', jwtMiddleware({ secret: opts.jwtSecret }), me, render)
   return router
 }
