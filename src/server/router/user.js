@@ -231,6 +231,12 @@ module.exports = (db, opts) => {
       next()
       return
     }
+    if (!matchedUser.hashedPassword) {
+      res.status(400)
+      res.locals.data = { err: '비밀번호가 설정되지 않은 사용자입니다.' }
+      next()
+      return
+    }
     const passwordMatched = await bcrypt.compare(
       req.body.password,
       matchedUser.hashedPassword
