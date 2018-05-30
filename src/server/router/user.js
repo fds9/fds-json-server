@@ -252,7 +252,10 @@ module.exports = (db, opts) => {
   }
 
   function me(req, res, next) {
-    res.locals.data = req.user
+    res.locals.data = db
+      .get('users')
+      .getById(req.user.id)
+      .value()
     next()
   }
 
