@@ -12,6 +12,11 @@ const { checkAuthError } = require('./authMiddleware')
 module.exports = (db, name, opts) => {
   const { authOpts, hashedPasswordName = 'hashedPassword' } = opts
 
+  function sanitizeUser(user) {
+    delete user[hashedPasswordName]
+    return user
+  }
+
   const readPermission =
     name === 'users' ? undefined : authOpts[name] && authOpts[name].read
   const writePermission =
@@ -32,6 +37,7 @@ module.exports = (db, name, opts) => {
           resource[externalResource] = db
             .get(externalResource)
             .filter(query)
+            .map(sanitizeUser)
             .value()
         }
       })
@@ -47,6 +53,7 @@ module.exports = (db, name, opts) => {
           resource[innerResource] = db
             .get(plural)
             .getById(resource[prop])
+            .tap(sanitizeUser)
             .value()
         }
       })
@@ -60,12 +67,7 @@ module.exports = (db, name, opts) => {
   // GET /name?_embed=&_expand=
   function list(req, res, next) {
     // Resource chain
-    let chain = db.get(name)
-    if (name === 'users') {
-      chain = chain.map(item => {
-        return _.omit(item, [hashedPasswordName])
-      })
-    }
+    let chain = db.get(name).map(sanitizeUser)
     if (readPermission === 'ownerOnly') {
       chain = chain.filter(item => {
         return item.userId === req.user.id
@@ -250,12 +252,11 @@ module.exports = (db, name, opts) => {
   function show(req, res, next) {
     const _embed = req.query._embed
     const _expand = req.query._expand
-    let chain = db.get(name).getById(req.params.id)
-
-    if (name === 'users') {
-      chain = chain.omit([hashedPasswordName])
-    }
-    const resource = chain.value()
+    const resource = db
+      .get(name)
+      .getById(req.params.id)
+      .tap(sanitizeUser)
+      .value()
 
     if (resource) {
       if (readPermission === 'ownerOnly' && resource.userId !== req.user.id) {
@@ -281,6 +282,14 @@ module.exports = (db, name, opts) => {
 
   // POST /name
   function create(req, res, next) {
+    if (name === 'users') {
+      next(
+        new Error(
+          '/users 경로에 바로 POST 요청을 보낼 수 없습니다. 대신 /users/login 혹은 /users/register 경로를 이용하세요.'
+        )
+      )
+      return
+    }
     const body = Object.assign({}, req.body)
     if (writePermission === 'ownerOnly') {
       body.userId = req.user.id
@@ -310,11 +319,13 @@ module.exports = (db, name, opts) => {
       .getById(id)
       .value()
     if (writePermission === 'ownerOnly') {
-      if (prevResource.userId !== req.user.id) {
+      const permitted =
+        name === 'users'
+          ? prevResource.id === req.user.id
+          : prevResource.userId === req.user.id
+      if (!permitted) {
         next(new NotAllowedError())
         return
-      } else {
-        body.userId = req.user.id
       }
     }
     let chain = db.get(name)
@@ -327,7 +338,7 @@ module.exports = (db, name, opts) => {
     const resource = chain.value()
 
     if (resource) {
-      res.locals.data = resource
+      res.locals.data = sanitizeUser(resource)
     }
 
     next()
