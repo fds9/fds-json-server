@@ -166,6 +166,7 @@ const resetTemplate = () => html`
 `
 
 module.exports = (db, opts) => {
+  const { hashedPasswordName = 'hashedPassword' } = opts
   const router = express.Router()
 
   async function createUser(req, res, next) {
@@ -205,7 +206,7 @@ module.exports = (db, opts) => {
       .get('users')
       .insert({
         username,
-        hashedPassword
+        [hashedPasswordName]: hashedPassword
       })
       .value()
     // 토큰 생성
@@ -231,7 +232,7 @@ module.exports = (db, opts) => {
       next()
       return
     }
-    if (!matchedUser.hashedPassword) {
+    if (!matchedUser[hashedPasswordName]) {
       res.status(400)
       res.locals.data = { err: '비밀번호가 설정되지 않은 사용자입니다.' }
       next()
@@ -239,7 +240,7 @@ module.exports = (db, opts) => {
     }
     const passwordMatched = await bcrypt.compare(
       req.body.password,
-      matchedUser.hashedPassword
+      matchedUser[hashedPasswordName]
     )
     if (!passwordMatched) {
       res.status(400)
@@ -287,7 +288,7 @@ module.exports = (db, opts) => {
     await db
       .get('users')
       .find({ username })
-      .assign({ hashedPassword })
+      .assign({ [hashedPasswordName]: hashedPassword })
       .write()
     res.redirect('/users/login')
   })
