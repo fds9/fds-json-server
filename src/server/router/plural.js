@@ -12,9 +12,9 @@ const { checkAuthError } = require('./authMiddleware')
 module.exports = (db, name, opts) => {
   const { authOpts, hashedPasswordName = 'hashedPassword' } = opts
 
-  function sanitizeUser(user) {
-    delete user[hashedPasswordName]
-    return user
+  function sanitizeUser(item) {
+    item && delete item[hashedPasswordName]
+    return item
   }
 
   const readPermission =
