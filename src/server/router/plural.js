@@ -338,7 +338,7 @@ module.exports = (db, name, opts) => {
     const resource = chain.value()
 
     if (resource) {
-      res.locals.data = sanitizeUser(resource)
+      res.locals.data = sanitizeUser(Object.assign({}, resource))
     }
 
     next()
