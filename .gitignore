@@ -6,3 +6,4 @@ lib
 .idea
 db.json
 .env
+auth.config.js
