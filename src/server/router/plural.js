@@ -346,14 +346,24 @@ module.exports = (db, name, opts) => {
 
   // DELETE /name/:id
   function destroy(req, res, next) {
+    const resourceBeforeRemoval = db
+      .get(name)
+      .getById(req.params.id)
+      .value()
+
+    if (
+      writePermission === 'ownerOnly' &&
+      resourceBeforeRemoval &&
+      resourceBeforeRemoval.userId !== req.user.id
+    ) {
+      next(new NotAllowedError())
+      return
+    }
+
     const resource = db
       .get(name)
       .removeById(req.params.id)
       .value()
-    if (writePermission === 'ownerOnly' && resource.userId !== req.user.id) {
-      next(new NotAllowedError())
-      return
-    }
 
     // Remove dependents documents
     const removable = db._.getRemovable(db.getState(), opts)
