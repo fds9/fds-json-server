@@ -171,7 +171,10 @@ module.exports = (db, opts) => {
 
   async function createUser(req, res, next) {
     await db.defaults({ users: [] }).write()
-    const { username, password } = req.body
+    const body = Object.assign({}, req.body)
+    const { username, password } = body
+    delete body.username
+    delete body.password
     // username, password 검증
     if (!username || !password) {
       res.status(400)
@@ -204,10 +207,15 @@ module.exports = (db, opts) => {
     // username, password 저장
     const user = db
       .get('users')
-      .insert({
-        username,
-        [hashedPasswordName]: hashedPassword
-      })
+      .insert(
+        Object.assign(
+          {
+            username,
+            [hashedPasswordName]: hashedPassword
+          },
+          body
+        )
+      )
       .value()
     // 토큰 생성
     jwt.sign({ id: user.id }, opts.jwtSecret, (err, token) => {
