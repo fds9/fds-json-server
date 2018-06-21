@@ -13,7 +13,8 @@ module.exports = (db, name, opts) => {
   const { authOpts, hashedPasswordName = 'hashedPassword' } = opts
 
   function sanitizeUser(item) {
-    item && delete item[hashedPasswordName]
+    item = Object.assign({}, item)
+    delete item[hashedPasswordName]
     return item
   }
 
@@ -50,11 +51,12 @@ module.exports = (db, name, opts) => {
         const plural = pluralize(innerResource)
         if (db.get(plural).value()) {
           const prop = `${innerResource}${opts.foreignKeySuffix}`
-          resource[innerResource] = db
-            .get(plural)
-            .getById(resource[prop])
-            .tap(sanitizeUser)
-            .value()
+          resource[innerResource] = sanitizeUser(
+            db
+              .get(plural)
+              .getById(resource[prop])
+              .value()
+          )
         }
       })
   }
@@ -67,7 +69,7 @@ module.exports = (db, name, opts) => {
   // GET /name?_embed=&_expand=
   function list(req, res, next) {
     // Resource chain
-    let chain = db.get(name).map(sanitizeUser)
+    let chain = db.get(name)
     if (readPermission === 'ownerOnly') {
       chain = chain.filter(item => {
         return item.userId === req.user.id
@@ -243,7 +245,7 @@ module.exports = (db, name, opts) => {
       expand(element, _expand)
     })
 
-    res.locals.data = chain.value()
+    res.locals.data = chain.value().map(sanitizeUser)
     next()
   }
 
@@ -255,7 +257,6 @@ module.exports = (db, name, opts) => {
     const resource = db
       .get(name)
       .getById(req.params.id)
-      .tap(sanitizeUser)
       .value()
 
     if (resource) {
@@ -274,7 +275,7 @@ module.exports = (db, name, opts) => {
       // /posts/1?_expand=user
       expand(clone, _expand)
 
-      res.locals.data = clone
+      res.locals.data = sanitizeUser(clone)
     }
 
     next()
@@ -338,7 +339,7 @@ module.exports = (db, name, opts) => {
     const resource = chain.value()
 
     if (resource) {
-      res.locals.data = sanitizeUser(Object.assign({}, resource))
+      res.locals.data = sanitizeUser(resource)
     }
 
     next()
