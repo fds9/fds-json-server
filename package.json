@@ -1,6 +1,6 @@
 {
   "name": "fds-json-server",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "json-server-version": "0.12.1",
   "description": "A fork from json-server augmented with authentication & authorization",
   "main": "./lib/server/index.js",
